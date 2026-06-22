@@ -2,18 +2,34 @@
 
 ## Overview
 
-## Purpose of the Project
-
-## Features
+A cloud-ready web application for recording sustainability-related software engineering decisions.
 
 ## Tech Stack
 
+- Next.js
+- TypeScript
+- PostgreSQL
+- Prisma
+- Docker
+
+## Features
+
+- Create impact items
+- View impact items
+- REST API
+- PostgreSQL persistence
+- Health endpoint
+
 ## Architecture
 
-## Data Model
+User
+→ Next.js
+→ Prisma
+→ PostgreSQL
 
-## Local Development Setup
+## Future Work
 
-## Environment Variables
-
-## API Endpoints
+- Azure App Service deployment
+- GitHub Actions CI/CD
+- Terraform infrastructure
+- Application Insights monitoring
