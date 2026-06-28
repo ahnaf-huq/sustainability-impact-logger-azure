@@ -1,16 +1,19 @@
 services:
   db:
     image: postgres:16
-    container_name: sustainability-impact-db
+    container_name: sustainability-impact-azure-db
     restart: unless-stopped
+
     environment:
       POSTGRES_USER: impact_user
       POSTGRES_PASSWORD: impact_password
       POSTGRES_DB: impact_logger
+
     ports:
-      - "5432:5432"
+      - "5433:5432"
+
     volumes:
-      - impact_db_data:/var/lib/postgresql/data
+      - azure_postgres_data:/var/lib/postgresql/data
 
 volumes:
-  impact_db_data:
+  azure_postgres_data:
