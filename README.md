@@ -465,6 +465,74 @@ The application already includes several practices useful for cloud deployment:
 
 ---
 
+## Azure PostgreSQL Integration
+
+The application has been successfully connected to a managed Azure PostgreSQL database.
+
+### Implemented
+
+* Created an **Azure Database for PostgreSQL Flexible Server**
+* Region: **Sweden Central**
+* PostgreSQL version: **16**
+* Configured a dedicated application database: `impact_logger`
+* Applied Prisma migrations to Azure using:
+
+```bash
+npm run db:migrate:deploy
+```
+
+* Verified migration status using:
+
+```bash
+npx prisma migrate status
+```
+
+* Connected the local Next.js application to Azure PostgreSQL through `DATABASE_URL`
+* Enabled encrypted database communication using:
+
+```text
+sslmode=require
+```
+
+* Confirmed that the application can:
+
+  * Create impact items
+  * Update item status
+  * Persist data after refresh
+  * Delete impact items
+  * Report database readiness through `/api/health/ready`
+
+### Current Azure Database Architecture
+
+```text
+Local Next.js Application
+  ↓
+Prisma ORM + PostgreSQL Driver Adapter
+  ↓
+Azure Database for PostgreSQL Flexible Server
+  ↓
+impact_logger database
+```
+
+### Database Security Notes
+
+* The Azure PostgreSQL server uses TLS-encrypted connections.
+* The database is accessed through a firewall rule limited to the current development IP address.
+* Database credentials and connection strings are stored only in the local `.env` file.
+* `.env` is excluded from Git and is never committed.
+* `.env.example` contains only non-sensitive placeholder values.
+
+### Production Migration Strategy
+
+Local development can use Prisma migration tooling as needed, while Azure and future deployment workflows use:
+
+```bash
+prisma migrate deploy
+```
+
+This applies committed migrations without creating or modifying migration files, making it suitable for managed cloud databases and CI/CD workflows.
+
+
 ## Cost Considerations
 
 For a small portfolio project, cloud costs should be managed carefully.
@@ -484,14 +552,13 @@ Planned cost-conscious practices include:
 
 ### Cloud and DevOps
 
-* Deploy the application to Azure App Service
-* Move the database to Azure Database for PostgreSQL
-* Add Application Insights monitoring
-* Add GitHub Actions CI/CD pipeline
-* Automate deployment from the `main` branch
-* Define Azure infrastructure using Terraform
-* Add health monitoring and alerting
-* Add Docker support for the Next.js application
+- Deploy the application to Azure App Service
+- Add Application Insights monitoring
+- Add GitHub Actions CI/CD pipeline
+- Automate Prisma migrations during deployment
+- Configure App Service outbound IP access to Azure PostgreSQL
+- Define Azure infrastructure using Terraform
+- Add health monitoring and alerting
 
 ### Application Features
 
