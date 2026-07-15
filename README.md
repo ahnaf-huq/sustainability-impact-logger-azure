@@ -548,6 +548,28 @@ Planned cost-conscious practices include:
 
 ---
 
+## Azure App Service Deployment
+
+The application is deployed to Azure App Service and connected to Azure Database for PostgreSQL Flexible Server.
+
+### Implemented
+
+* Hosted the Next.js application on Azure App Service in Sweden Central
+* Configured Node.js 24 runtime and Linux hosting
+* Stored production configuration through App Service environment variables
+* Allowed App Service outbound IP addresses through the PostgreSQL firewall
+* Deployed the application through Azure CLI ZIP deployment
+* Verified deployed health endpoints and full CRUD functionality:
+
+  * Create impact item
+  * Update item status
+  * Persist changes after refresh
+  * Delete impact item
+
+The deployed application uses the managed Azure PostgreSQL database rather than the local Docker database.
+
+---
+
 ## Future Improvements
 
 ### Cloud and DevOps
