@@ -2,9 +2,9 @@
 
 ## Objective
 
-Deploy the Sustainability Impact Logger as a cloud-hosted application using Azure App Service and Azure Database for PostgreSQL Flexible Server.
+Deploy the Sustainability Impact Logger as a cloud-hosted application using Azure App Service, Azure Database for PostgreSQL Flexible Server, and Azure Monitor Application Insights.
 
-The application and managed database are now deployed and validated. The remaining work is to add monitoring with Application Insights and automate delivery with GitHub Actions.
+The application, managed database, App Service deployment, and monitoring setup are now deployed and validated. The remaining work is to automate delivery with GitHub Actions and later define the infrastructure using Terraform.
 
 ---
 
@@ -105,6 +105,30 @@ The application and managed database are now deployed and validated. The remaini
   * Confirm persisted data after refresh
   * Delete impact item
 
+* Created an Azure Application Insights resource for monitoring.
+
+* Added the Application Insights connection string to Azure App Service environment variables:
+
+  ```text
+  APPLICATIONINSIGHTS_CONNECTION_STRING
+  ```
+
+* Installed Azure Monitor OpenTelemetry instrumentation for the Node.js runtime.
+
+* Added Next.js instrumentation through:
+
+  ```text
+  src/instrumentation.ts
+  ```
+
+* Verified Application Insights telemetry from the deployed application:
+
+  * Request telemetry
+  * Health endpoint calls
+  * Database readiness checks
+  * CRUD operation traffic
+  * Failed or invalid request visibility
+
 ---
 
 ## Current Architecture
@@ -121,24 +145,28 @@ Prisma ORM + PostgreSQL driver adapter
 Azure Database for PostgreSQL Flexible Server
   ↓
 impact_logger database
-```
 
-### Planned Observability and Delivery Architecture
-
-```text
-User
-  ↓
 Azure App Service
   ↓
-Next.js application
+Azure Monitor OpenTelemetry
   ↓
-Azure Database for PostgreSQL Flexible Server
-  ↓
-Azure Monitor Application Insights
+Application Insights
+```
 
+---
+
+## Planned CI/CD Architecture
+
+```text
+Developer
+  ↓
+GitHub Repository
+  ↓
 GitHub Actions
   ↓
-Lint → Build → Deploy → Health Check
+Lint → Build → Prisma migrate deploy → Deploy to Azure App Service
+  ↓
+Post-deployment health checks
 ```
 
 ---
@@ -157,15 +185,18 @@ The readiness endpoint is particularly useful after deployment because it confir
 
 ## Remaining Deployment Phases
 
-1. Create and configure Application Insights.
-2. Add the Application Insights connection string to App Service settings.
-3. Add OpenTelemetry instrumentation to the Next.js application.
-4. Verify request, dependency, and exception telemetry.
-5. Add a GitHub Actions CI validation workflow.
-6. Add a GitHub Actions deployment workflow.
-7. Automate production Prisma migrations during deployment.
-8. Replace manual ZIP deployment with CI/CD deployment.
-9. Define the Azure infrastructure using Terraform as a later Infrastructure as Code phase.
+1. Add a GitHub Actions CI validation workflow.
+2. Add a GitHub Actions deployment workflow.
+3. Automate production Prisma migrations during deployment.
+4. Add automated post-deployment health checks for:
+
+   * `/api/health`
+   * `/api/health/ready`
+5. Replace manual ZIP deployment with CI/CD deployment.
+6. Add Application Insights alert rules for failed health checks or high failure rates.
+7. Add telemetry cost controls, such as daily caps or retention settings.
+8. Define the Azure infrastructure using Terraform as a later Infrastructure as Code phase.
+9. Explore private networking or VNet integration as a future production-ready networking improvement.
 
 ---
 
@@ -214,6 +245,14 @@ node_modules
 .git
 ```
 
+The deployment package can be recreated with:
+
+```bash
+git archive --format=zip --output=sustainability-impact-logger.zip HEAD
+```
+
+The ZIP file is a generated deployment artifact and should not be committed to Git.
+
 Build automation was enabled through:
 
 ```text
@@ -226,6 +265,53 @@ The App Service build required development dependencies because Tailwind and Pos
 NPM_CONFIG_PRODUCTION=false
 ```
 
+The App Service startup command is:
+
+```text
+npm start
+```
+
+---
+
+## Monitoring Notes
+
+Application monitoring is configured through Azure Monitor Application Insights.
+
+The application uses:
+
+```text
+@azure/monitor-opentelemetry
+```
+
+Instrumentation is registered through:
+
+```text
+src/instrumentation.ts
+```
+
+The Application Insights connection string is configured as an App Service environment variable:
+
+```text
+APPLICATIONINSIGHTS_CONNECTION_STRING
+```
+
+This value is not committed to Git.
+
+Application Insights has been verified for:
+
+* Request telemetry
+* Health endpoint traffic
+* CRUD operation traffic
+* Failed or invalid request visibility
+
+Future monitoring improvements may include:
+
+* Custom telemetry events for important user actions
+* Alert rules for failed health checks
+* Alert rules for high failure rates
+* Cost controls for telemetry ingestion
+* Retention and sampling configuration
+
 ---
 
 ## Security Notes
@@ -236,9 +322,10 @@ NPM_CONFIG_PRODUCTION=false
 * Azure PostgreSQL uses public networking with firewall access restricted to the required development and App Service outbound IP addresses.
 * Database communication requires TLS through `sslmode=require`.
 * `DATABASE_URL` is configured through Azure App Service application settings rather than repository files.
+* `APPLICATIONINSIGHTS_CONNECTION_STRING` is configured through Azure App Service application settings rather than repository files.
 * Azure App Service basic authentication and FTP basic authentication remain disabled.
 * GitHub Actions will later use OpenID Connect authentication instead of long-lived Azure credentials.
-* Application Insights connection details will be stored as Azure App Service application settings.
+* Monitoring configuration is separated from source code to avoid exposing cloud-specific connection details.
 
 ---
 
@@ -252,7 +339,8 @@ Current cost-conscious decisions:
 * High availability is disabled.
 * Resources are grouped in one dedicated resource group for easier review and deletion.
 * Azure App Service is configured only for portfolio use.
-* Application Insights will be configured with minimal data collection and cost monitoring.
+* Application Insights is configured for learning and portfolio monitoring.
+* Future telemetry cost controls should include daily caps, retention review, and minimal unnecessary ingestion.
 * Unused resources should be stopped or deleted after testing.
 
 ---
@@ -280,13 +368,20 @@ Current cost-conscious decisions:
 * [x] `/api/health/ready` returns HTTP 200
 * [x] CRUD operations tested from deployed application
 
-### Observability and CI/CD
+### Observability
 
-* [ ] Application Insights configured
-* [ ] Requests visible in Application Insights
-* [ ] Database dependencies visible in Application Insights
-* [ ] Exceptions visible in Application Insights
+* [x] Application Insights configured
+* [x] Application Insights connection string added to App Service settings
+* [x] OpenTelemetry instrumentation added
+* [x] Requests visible in Application Insights
+* [x] Health endpoint telemetry visible in Application Insights
+* [x] CRUD request telemetry visible in Application Insights
+* [x] Failed or invalid request visibility verified
+
+### CI/CD
+
 * [ ] GitHub Actions CI workflow added
 * [ ] GitHub Actions deployment workflow added
 * [ ] Production migrations automated during deployment
 * [ ] Deployment health check automated
+* [ ] Manual ZIP deployment replaced with CI/CD
