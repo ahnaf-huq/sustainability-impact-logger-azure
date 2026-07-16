@@ -611,13 +611,15 @@ The connection string is stored only in Azure App Service application settings a
 
 ### Cloud and DevOps
 
-- Deploy the application to Azure App Service
-- Add Application Insights monitoring
-- Add GitHub Actions CI/CD pipeline
-- Automate Prisma migrations during deployment
-- Configure App Service outbound IP access to Azure PostgreSQL
-- Define Azure infrastructure using Terraform
-- Add health monitoring and alerting
+* Add GitHub Actions CI workflow for linting and build validation
+* Add GitHub Actions deployment workflow for Azure App Service
+* Automate Prisma migrations during deployment using `prisma migrate deploy`
+* Add automated post-deployment health checks for `/api/health` and `/api/health/ready`
+* Add Application Insights alert rules for failed health checks or high failure rates
+* Add custom telemetry events for important user actions
+* Configure telemetry cost controls, such as daily caps or retention settings
+* Define Azure infrastructure using Terraform
+* Add a production-ready networking option using private networking or VNet integration
 
 ### Application Features
 
