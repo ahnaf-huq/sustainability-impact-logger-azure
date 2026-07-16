@@ -570,6 +570,43 @@ The deployed application uses the managed Azure PostgreSQL database rather than 
 
 ---
 
+## Application Insights Monitoring
+
+Application monitoring has been added using Azure Monitor Application Insights and OpenTelemetry instrumentation.
+
+### Implemented
+
+- Created an Application Insights resource in Azure
+- Added the Application Insights connection string through Azure App Service environment variables
+- Installed Azure Monitor OpenTelemetry support for the Node.js runtime
+- Added Next.js instrumentation through `src/instrumentation.ts`
+- Verified telemetry from the deployed application
+
+### Verified telemetry
+
+The deployed application now sends monitoring data for:
+
+- Page and API requests
+- Health endpoint calls
+- Database readiness checks
+- CRUD interactions
+- Failed or invalid requests
+- Server-side runtime exceptions where applicable
+
+### Monitoring value
+
+Application Insights helps observe how the deployed application behaves in Azure by providing:
+
+- Request traffic visibility
+- Response time tracking
+- Failure and exception diagnostics
+- Dependency and database-call visibility
+- Operational validation after deployment
+
+The connection string is stored only in Azure App Service application settings and is not committed to Git.
+
+---
+
 ## Future Improvements
 
 ### Cloud and DevOps
